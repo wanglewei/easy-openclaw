@@ -114,12 +114,16 @@ openclaw config get browser.defaultProfile
 再做 SearXNG 连通性检查（本地优先）：
 
 ```bash
-curl -s "http://127.0.0.1:8080/search?q=openclaw&format=json" | jq '.results | length'
+curl -s "http://127.0.0.1:8081/search?q=openclaw&format=json" | jq '.results | length'
 ```
 
 若本地未部署或暂时不可用：
 - 从 `https://searx.space/` 选择可用实例
 - 将上面的地址替换为实例地址后重试（保留 `search?...&format=json`）
+
+若本地部署后仍失败，优先检查：
+- 宿主机端口冲突：确认 `8081` 映射到容器 `8080`，不要默认占用 `8080`
+- JSON 未启用：若 `curl "http://127.0.0.1:8081/search?q=openclaw"` 返回 200，但 `format=json` 返回 403，检查 `settings.yml` 的 `search.formats` 是否包含 `json`
 
 同时检查 `~/.openclaw/workspace/TOOLS.md`：
 - 是否写明“先 SearXNG，再 browser(profile=openclaw) snapshot”的顺序
@@ -132,3 +136,5 @@ curl -s "http://127.0.0.1:8080/search?q=openclaw&format=json" | jq '.results | l
 - `agentId` 大小写不一致导致路由错乱
 - 修改后未重启 Gateway 导致看起来“配置不生效”
 - 误把 Discord 频道重连当成 Gateway 全量重启
+- SearXNG 使用 `8080` 与现有服务冲突，导致“看似已部署但请求打到其他服务”
+- SearXNG 仅开放 `html` 格式，导致 `format=json` 长期 403

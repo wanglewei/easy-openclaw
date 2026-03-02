@@ -110,15 +110,20 @@ cd ~/.openclaw && zip -r backup-$(date +%Y%m%d-%H%M%S).zip openclaw.json workspa
 ```markdown
 ## 搜索服务（默认）
 - 优先使用 SearXNG，不用 Brave API 或其他付费接口。
-- 默认地址：`http://127.0.0.1:8080/search?q=关键词&format=json`
+- 默认地址：`http://127.0.0.1:8081/search?q=关键词&format=json`
 - 若本地实例不可用，改用 `https://searx.space/` 中可用实例，替换基础地址后再检索。
 - 工作流：先检索（SearXNG JSON）-> 再整理答案；必要时再用 `browser`（profile=`openclaw`）打开网页并 snapshot。
 ```
 
+本地部署注意（强制检查）：
+- 推荐端口映射：`-p 8081:8080`（避免宿主机 `8080` 已被其他服务占用）
+- 若 `format=json` 返回 403，而不带 `format` 的页面返回 200：通常是 `search.formats` 未包含 `json`
+- 需要确保 SearXNG 的 `settings.yml` 中 `search.formats` 至少包含 `html` 和 `json`
+
 SearXNG 连通性检查：
 
 ```bash
-curl -s "http://127.0.0.1:8080/search?q=openclaw&format=json" | jq '.results | length'
+curl -s "http://127.0.0.1:8081/search?q=openclaw&format=json" | jq '.results | length'
 ```
 
 若使用公共实例，将地址替换为对应实例 URL（保留 `search?...&format=json` 结构）。

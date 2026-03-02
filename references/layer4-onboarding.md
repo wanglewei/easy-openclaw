@@ -8,6 +8,11 @@
 
 按用户选择的新增渠道发送步骤与回传模板：
 
+- 输出约束（强制）：
+  - 当用户选择 `12 开，新增 <channel>` 时，必须逐条完整发送该渠道的阶段 A 步骤，不得压缩成“只回传 token/appSecret”。
+  - Telegram 场景不得省略 `@BotFather`、`/newbot`、用户名规则、配对码回传。
+  - 若首轮回复有遗漏，必须在下一条消息补齐完整步骤与模板，再进入阶段 B。
+
 - 海外渠道连通性前置提醒：
   - 若要接入 `discord` / `telegram` 等海外渠道，需同时确认「OpenClaw 所在服务器」与「你当前使用的网络环境」都可访问对应平台及其 API。
   - 任一侧不可达都可能导致登录、配对、收发消息或探针验证失败。
@@ -26,7 +31,8 @@
   - 对话输入 `/newbot`
   - 设置机器人名称：需唯一，且用户名必须以 `bot` 结尾
   - 成功后会收到 `Done!`，其中包含 Bot Token；将该 Token 回传
-  - 在 Telegram 内给机器人发一条消息，收到配对码后回传，我来允许配对
+  - 在 Telegram 内给机器人发一条消息（或 `/start`）只会触发“配对码下发”，不等于配对完成
+  - 收到配对码后必须回传，我来执行 `openclaw pairing approve telegram <pairingCode>`；执行成功后才算配对完成
 
 - Feishu（用户侧）
   - 第一段（先做 1-7，做完先回传 `App ID/App Secret`）：
@@ -77,6 +83,8 @@ feishu:
   - 深度合并 `channels.telegram.enabled=true`
   - 写 `channels.telegram.botToken`
   - 建议补齐：`dmPolicy=pairing`、`groupPolicy=open`
+  - 写入完成后需提示用户触发配对码（发送 `/start` 或任意消息）
+  - 严禁宣告“Telegram 接入成功”直到配对码已回传且 `pairing approve` 执行成功
 
 - Feishu：
   - 先检查/安装插件：
@@ -96,6 +104,11 @@ feishu:
   - Telegram：`openclaw pairing approve telegram <pairingCode>`
   - Feishu：`openclaw pairing approve feishu <pairingCode>`
 - 仅在多账号冲突时再补：`--account <accountId>`
+
+配对完成判定（Telegram）：
+- 已执行 `openclaw pairing approve telegram <pairingCode>` 且命令成功
+- `openclaw channels status --probe` 显示 Telegram `works`
+- 未满足以上条件时，状态必须标记为“已写入待配对”，不能标记为“接入成功”
 
 执行后验证：
 
