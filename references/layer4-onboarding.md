@@ -12,6 +12,9 @@
   - 当用户选择 `12 开，新增 <channel>` 时，必须逐条完整发送该渠道的阶段 A 步骤，不得压缩成“只回传 token/appSecret”。
   - Telegram 场景不得省略 `@BotFather`、`/newbot`、用户名规则、配对码回传。
   - 若首轮回复有遗漏，必须在下一条消息补齐完整步骤与模板，再进入阶段 B。
+  - 不要向普通用户展示大段“回传模板”代码块；优先用自然语言说明“把 token 发给我”“把配对码发给我”。
+  - 当用户回传 token 或 pairingCode 后，必须立即给出状态反馈和下一步动作，不能静默停住。
+  - Discord 配对成功后，必须在同一条回复里直接继续主流程或进入统一执行确认，不要停在“已成功”状态等待用户追问。
 
 - 海外渠道连通性前置提醒：
   - 若要接入 `discord` / `telegram` 等海外渠道，需同时确认「OpenClaw 所在服务器」与「你当前使用的网络环境」都可访问对应平台及其 API。
@@ -23,8 +26,9 @@
   - 仍在 `Bot` 页面向下，5 个滑块中仅第 2 个关闭，其余 1/3/4/5 打开
   - 点击左侧 `OAuth2`，勾选 `applications.commands` 和 `bot`
   - 在 `bot permissions` 勾选：`View Channels`、`Send Messages`、`Read Message History`、`Embed Links`、`Attach Files`、`Add Reactions`
-  - 页面底部生成邀请链接并邀请机器人进目标服务器；完成后回传 Bot Token
-  - 在 Discord 内 `@机器人` 发送一条消息，收到配对码后回传，我来允许配对
+  - 页面底部生成邀请链接并邀请机器人进目标服务器；完成后把刚刚 `Reset Token` 生成的新 Bot Token 发给我
+  - 我写入配置后，你去 Discord 里 `@机器人` 发一条消息测试；收到配对码后把配对码发给我，我来允许配对
+  - 若你已经完成了 Discord 侧测试，也可以在发回配对码时顺手补一句“继续”，这样我会直接往后执行主流程
 
 - Telegram（用户侧）
   - 在 Telegram 搜索 `@BotFather`（带 `@`，区分大小写，选择用户最多的官方机器人）
@@ -50,25 +54,10 @@
   - 11) 再次创建版本并发布
   - 12) 在飞书内搜索机器人并发起对话，收到配对码后回传
 
-统一回传模板：
-
-```text
-新增渠道: discord,feishu
-discord:
-- token: <必填>
-- accountId: default
-- pairingCode: <拿到后回传，可后补>
-telegram:
-- botToken: <必填>
-- accountId: default
-- pairingCode: <拿到后回传，可后补>
-feishu:
-- appId: <必填>
-- appSecret: <必填>
-- domain: feishu
-- connectionMode: websocket
-- pairingCode: <完成后续 8-12 步后回传，可后补>
-```
+内部字段约定（不给用户展示大段模板）：
+- Discord：`token`、`accountId=default`、`pairingCode`
+- Telegram：`botToken`、`accountId=default`、`pairingCode`
+- Feishu：`appId`、`appSecret`、`domain=feishu`、`connectionMode=websocket`、`pairingCode`
 
 ### 阶段 B：AI 执行本地对接（写配置）
 
@@ -78,6 +67,7 @@ feishu:
   - 深度合并 `channels.discord.enabled=true`
   - 优先写 `channels.discord.accounts.<accountId>.token`
   - 若当前是单账号结构可写 `channels.discord.token`
+  - 写入后必须立刻反馈：`Discord 配置已写入 -> 现在请去 Discord @机器人发一条消息测试 -> 收到配对码后发给我`
 
 - Telegram：
   - 深度合并 `channels.telegram.enabled=true`
@@ -104,6 +94,13 @@ feishu:
   - Telegram：`openclaw pairing approve telegram <pairingCode>`
   - Feishu：`openclaw pairing approve feishu <pairingCode>`
 - 仅在多账号冲突时再补：`--account <accountId>`
+
+配对后续流转（强制）：
+- Discord pairing approve 成功后，必须在同一条回复里明确给出：
+  - `Discord 配对成功`
+  - `本轮新增渠道已完成`
+  - 若前面还有统一执行确认未完成，则直接继续输出“确认后我将统一执行以下变更”
+- 禁止在配对成功后停住不说下一步。
 
 配对完成判定（Telegram）：
 - 已执行 `openclaw pairing approve telegram <pairingCode>` 且命令成功

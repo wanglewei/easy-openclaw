@@ -143,7 +143,8 @@ cd ~/.openclaw && unzip -o <文件名> -d ~/.openclaw/
 > 4. 联网搜索：优先使用正文提取服务（`defuddle -> r.jina.ai`），必要时用隔离浏览器抓取页面（推荐开）
 > 5. 权限模式（可选）：默认维持现状 `coding`；也可切到 `full`（完全开放）或 `minimal`（最小安全）
 >
-> 请按格式回复：`渠道 discord; 1 开, 2 开, 3 开, 4 开, 5 开`
+> 请按格式回复：`渠道 discord; 1 开, 2 开, 3 开, 4 开, 5 维持现状`
+> 第 5 项可选值：`维持现状` / `完全开放` / `最小安全`
 > 若你当前没有接入任何聊天渠道，请回复：`渠道 tui`
 
 记录“当前渠道 + 五项选择”，不执行写入。
@@ -205,9 +206,13 @@ cd ~/.openclaw && unzip -o <文件名> -d ~/.openclaw/
 > 12. 你要不要现在新增接入其他渠道？（`discord` / `feishu` / `telegram`）
 >
 > 你可以回复：
+> - `12 开，新增 discord`
 > - `12 开，新增 feishu`
 > - `12 开，新增 telegram`
+> - `12 开，新增 discord,feishu`
+> - `12 开，新增 discord,telegram`
 > - `12 开，新增 feishu,telegram`
+> - `12 开，新增 discord,feishu,telegram`
 > - `跳过第四层`（推荐）
 
 规则：
