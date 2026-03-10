@@ -41,7 +41,7 @@
 
 1. 对你的 OpenClaw 说：
 
-> 从 `https://github.com/wanglewei/easy-openclaw` 安装并启用这个 skill。
+> 从 `https://github.com/daheiai/easy-openclaw` 安装并启用这个 skill。
 
 2. 跟着它回答问题（开/关，或按格式回复）。
 

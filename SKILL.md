@@ -186,11 +186,17 @@ cd ~/.openclaw && unzip -o <文件名> -d ~/.openclaw/
 
 规则：
 - 默认直接展示推荐清单，不再额外询问“是否进入推荐清单”
+- 第 3 轮默认推荐来源只能是 `references/layer3-skills.md`；禁止改用系统当前已安装 Skills 列表、`openclaw skills list`、`find-skills`、`clawhub` 或任何通用 Skills 发现结果替代。
 - 若用户回复“跳过第三层”，记录后进入第 4 轮
 - 若用户点名安装某个 Skill：立即执行安装链路（读取 README 安装段落 -> 原样执行 -> 最小验证 -> 回报结果）
 - 对“更多 Skills 扩展入口”默认只展示双仓链接，不自动抓取摘要；用户明确要求“展开总结”再抓取分类
+- 若模型已读取到系统 Skills 列表，也不得将其当作第 3 轮默认推荐清单；只有用户明确要求“看看系统里还有哪些 Skills”时，才可单独展示系统列表。
 - 若安装“大黑AI日报”：必须补齐 `delivery.mode=announce`、`delivery.channel=<当前会话渠道>`、`delivery.to=<当前窗口目标ID>`；`delivery.to` 为空时只能报“待修复”，不能报“安装成功”
+- 若安装“大黑AI日报”：内容来源固定为 `https://news.daheiai.com/rss.php` 最新一个 `item`；禁止把网页抓取当主路径
+- 若安装“大黑AI日报”：字段优先级固定为 `content:encoded > description > link`，并用 `guid / pubDate / title` 做去重与展示
+- 若安装“大黑AI日报”：手动测试触发前，必须先通过 `cron list` 或任务文件解析出真实 `job id`；禁止把任务名（例如“大黑AI日报”）直接当作 `cron run` 的 id 使用
 - 若安装“大黑AI日报”：安装后必须立刻手动触发一次日报，且先向用户输出一条“测试消息/即时触发”再验证“当前窗口已收到消息”
+- 若安装“大黑AI日报”：若 `cron run` 只返回 `enqueued`，只能汇报“已入队等待投递结果”，不能直接汇报“测试推送成功”
 - 若安装“大黑AI日报”：只有在用户确认收到测试消息后，才可宣告安装完成并开启定时调度
 
 ---
@@ -229,6 +235,7 @@ cd ~/.openclaw && unzip -o <文件名> -d ~/.openclaw/
 - 强制完整输出：当用户回复 `12 开，新增 <channel>` 时，必须逐条完整输出该渠道的阶段 A 平台侧步骤与回传模板，不得简化为“只提供 token/appSecret”。
 - 禁止省略关键引导：Telegram 必须包含 `@BotFather`、`/newbot`、用户名规则、配对码回传；Discord/Feishu 同理按文案完整输出。
 - 若首次回复遗漏任何阶段 A 必填步骤，必须立即补发完整步骤后再继续下一步。
+- Feishu 输出强制：选择 `12 开，新增 feishu` 后，必须先完整输出 1-7；在中间验证成功后，再完整输出 8-12。禁止退化成泛泛的“去开放平台创建应用”。
 - Telegram 配对语义强制：必须明确“发送 `/start` 或任意消息仅用于触发配对码，不等于配对完成”；只有回传 `pairingCode` 并执行 `openclaw pairing approve telegram <pairingCode>` 成功后，才可宣告接入成功。
 
 ---
@@ -528,8 +535,10 @@ printf '%s' '{"version":1,"socket":{},"defaults":{"security":"allowlist","ask":"
   - 深度合并写入 `channels.telegram.enabled=true`
   - 写入 `channels.telegram.botToken`
   - 默认补齐：`channels.telegram.dmPolicy="pairing"`、`channels.telegram.groupPolicy="open"`
-  - 提示用户发送 `/start` 或任意消息以获取配对码（仅触发，不等于完成）
-  - 收到配对码后执行 `openclaw pairing approve telegram <pairingCode>`
+  - 写入后优先执行 `openclaw pairing list telegram` 检查是否已有 pending pairing
+  - 必须先反馈“Telegram 配置已写入”，再提示用户发送 `/start` 或任意消息以获取配对码（仅触发，不等于完成）
+  - 若检测到 pending pairing，必须明确提示“当前已写入待配对，请把配对码发给我，我来继续 approve”
+  - 收到配对码后立即执行 `openclaw pairing approve telegram <pairingCode>`，成功后同一条回复里继续主流程
   - 配对码未回传前，状态只能标记为“已写入待配对”，不得标记“接入成功”
 - `feishu`：
   - 先确保插件可用：
@@ -542,7 +551,7 @@ printf '%s' '{"version":1,"socket":{},"defaults":{"security":"allowlist","ask":"
   - 执行一次前置连接验证（允许一次例外重启）：
     - `openclaw gateway restart`
     - `openclaw channels status --probe`
-  - 若连接验证成功，再向用户发送飞书后续 8-12 步
+  - 若连接验证成功，必须按 `references/layer4-onboarding.md` 原样发送飞书后续 8-12 步，不得改写成泛泛说明
   - 若连接验证失败，先输出修复建议，不进入后续 8-12 步
 
 执行规则：
@@ -667,6 +676,8 @@ openclaw config get tools.profile
 - 已写入 `delivery.mode=announce`
 - 已写入 `delivery.channel` 且与当前会话渠道一致
 - 已写入 `delivery.to`（禁止为空）
+- RSS 最新一期可稳定读取到 `title / pubDate / guid / link`
+- 正文优先读取 `content:encoded`；若缺失再回退 `description`
 - 手动触发一次日报后，当前窗口可收到“测试消息/即时触发”标记的测试消息；否则标记为“待修复”
 - 用户确认收到测试消息后，才可进入“定时调度已启用”状态
 

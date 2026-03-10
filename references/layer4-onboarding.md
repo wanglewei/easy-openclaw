@@ -15,6 +15,7 @@
   - 不要向普通用户展示大段“回传模板”代码块；优先用自然语言说明“把 token 发给我”“把配对码发给我”。
   - 当用户回传 token 或 pairingCode 后，必须立即给出状态反馈和下一步动作，不能静默停住。
   - Discord 配对成功后，必须在同一条回复里直接继续主流程或进入统一执行确认，不要停在“已成功”状态等待用户追问。
+  - Feishu 场景不得退化成“去开放平台创建应用并把 App ID/App Secret 发给我”这类泛化说明；必须按 1-7 与 8-12 两段完整输出。
 
 - 海外渠道连通性前置提醒：
   - 若要接入 `discord` / `telegram` 等海外渠道，需同时确认「OpenClaw 所在服务器」与「你当前使用的网络环境」都可访问对应平台及其 API。
@@ -73,7 +74,9 @@
   - 深度合并 `channels.telegram.enabled=true`
   - 写 `channels.telegram.botToken`
   - 建议补齐：`dmPolicy=pairing`、`groupPolicy=open`
-  - 写入完成后需提示用户触发配对码（发送 `/start` 或任意消息）
+  - 写入完成后必须先反馈“Telegram 配置已写入”，再提示用户触发配对码（发送 `/start` 或任意消息）
+  - 写入后优先执行 `openclaw pairing list telegram` 检查是否已存在 pending pairing；若存在，必须明确告知“当前已写入待配对，请把刚收到的配对码发给我，我来继续 approve”，不能直接宣告成功
+  - 若用户已在同一轮回传配对码，则立刻执行 `openclaw pairing approve telegram <pairingCode>`
   - 严禁宣告“Telegram 接入成功”直到配对码已回传且 `pairing approve` 执行成功
 
 - Feishu：
@@ -98,6 +101,10 @@
 配对后续流转（强制）：
 - Discord pairing approve 成功后，必须在同一条回复里明确给出：
   - `Discord 配对成功`
+  - `本轮新增渠道已完成`
+  - 若前面还有统一执行确认未完成，则直接继续输出“确认后我将统一执行以下变更”
+- Telegram pairing approve 成功后，也必须在同一条回复里明确给出：
+  - `Telegram 配对成功`
   - `本轮新增渠道已完成`
   - 若前面还有统一执行确认未完成，则直接继续输出“确认后我将统一执行以下变更”
 - 禁止在配对成功后停住不说下一步。
