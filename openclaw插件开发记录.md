@@ -121,6 +121,7 @@
 ### 已完成
 - 将 `references/configs.md` 重构为“1 个总览 + 5 个子文件”，降低单文件复杂度。
 - 第三层 Skills 推荐已改为可执行：支持点名即安装；生态仓库入口默认直接展示链接与用途，按需再展开总结。
+- 第三层安装规则补强：多选时只能安装用户明确点名的编号；依赖缺失优先自动补齐，禁止“顺带装”未选择条目、禁止向用户索要终端密码。
 - 调整 Discord 渠道增强提问顺序：`6 免 @`、`7 审批转发`，并移除“多 Agent”项（避免与第 4 轮新增渠道语义重叠）。
 - 优化 Discord `guildId` 获取逻辑：
   - 默认路径改为 `channelId -> GET /channels/<channelId> -> guild_id`；
@@ -149,6 +150,7 @@
   - 要求 `PID before/after` 对比；
   - 日志关键字区分“Gateway 全量重启”与“仅 Discord 频道重连”；
   - 若出现 `Command still running`，必须继续轮询完成后再宣告成功。
+- 新增“验收阶段止损”规则：用户发 `hi/nihao/test/现在如何了` 之类短消息时，只能视为在线验收，不能再次读写配置或触发重启。
 - 按 `backup-unoptimized-state-20260227-204752.zip` 完成一次未优化基线回滚，并验证哈希一致、Gateway 可用。
 - 复盘本轮测试日志，确认本次确实发生了 Gateway 重启；并确认 `guild_id` 来源为 Discord channels API 查询结果。
 

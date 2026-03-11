@@ -139,8 +139,14 @@ curl -L -s "https://r.jina.ai/http://example.com" | head
 - 写 JSON 时带注释导致解析失败
 - 未做深度合并导致用户原配置丢失
 - `streaming` 误写为 `true`（应为 `"partial"`）
+- 把用户的 `hi/nihao/test/现在如何了` 之类验收消息误当成“继续修配置/继续重启”的授权
 - `agentId` 大小写不一致导致路由错乱
 - 修改后未重启 Gateway 导致看起来“配置不生效”
 - 误把 Discord 频道重连当成 Gateway 全量重启
 - 目标站点存在登录墙、Cloudflare 或 403 防护，导致 `defuddle` / `r.jina.ai` 都失败
 - Docker / VPS / 无桌面环境缺少图形界面，导致浏览器兜底不可用
+
+## 更新后复测
+
+- 更新 `easy-openclaw` skill 后，必须开启**新会话**再复测。
+- 不要拿旧会话继续验证新规则；旧 session 可能还在沿用旧版 skill 快照。

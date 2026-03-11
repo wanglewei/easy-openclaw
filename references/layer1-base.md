@@ -33,6 +33,10 @@ cd ~ && zip -r "$BACKUP_DIR/backup-openclaw-all-$(date +%Y%m%d-%H%M%S).zip" .ope
 - `"block"`
 - `"progress"`
 
+硬规则：
+- `streaming` 只能写以上合法枚举值。
+- 当前 skill 的默认写法一律是 `"partial"`；禁止写成布尔值 `true/false`。
+
 可配合：
 ```json
 "agents": {
