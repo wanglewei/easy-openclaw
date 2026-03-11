@@ -22,9 +22,10 @@
 - 权限模式（默认 coding，也可切 full / minimal）
 
 2. 渠道专项优化
-- Discord：频道免 @ 响应、审批按钮（可选，需开启 `+审批`）
+- Exec 高危操作审批（第 2 轮统一收集，`coding/full` 有效，默认建议关）
+- Discord：频道免 @ 响应、审批按钮（可选，需先开启审批）
 - Feishu：探测 24h 缓存优化（降低额度消耗）
-- Telegram：本层暂无专项增强（审批提示投递见第 1 层权限模式的 `approvals.exec`）
+- Telegram：本层可直接配置审批提示投递
 
 3. Skills 推荐与安装
 - 默认直接展示推荐清单

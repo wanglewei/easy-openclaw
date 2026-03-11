@@ -78,12 +78,40 @@
 }
 ```
 
-## 7) Discord 审批按钮（可选）
+## 7) Exec 高危操作审批（跨渠道，可选）
 
-适用场景：已启用第 1 层第 5 项带 `+审批`（`coding/full` 下的 exec 高危操作审批）后，希望在 Discord 内用按钮完成审批。
+适用场景：当前权限模式不是 `minimal`，希望把“未命中 allowlist 的高危命令”改成先审批再执行。
+
+定位说明：
+- 这一项属于第 2 轮统一收集，不再放在第 1 轮“权限模式”里。
+- 第 1 轮第 5 项只决定 `coding / full / minimal`。
+- 只有在 `coding` / `full` 下，这一项才有意义；`minimal` 下 exec 往往不可用，审批也没有触发机会。
+- 默认建议关闭；只有用户明确需要“先审批再执行”时再开启。因为开启后很多读取、检查、执行动作也会更繁琐。
+
+可选值：
+- `关`
+- `session`：审批提示跟随当前会话
+- `targets`：审批提示固定发到指定账号/频道
+- `both`：当前会话和固定目标都发
+
+执行规则：
+- 审批策略统一使用 `exec-approvals.json` 的 `security=allowlist + ask=on-miss + askFallback=deny`
+- 审批提示投递统一写到 `openclaw.json` 的 `approvals.exec`
+- 若用户选择 `targets` / `both`，优先自动提取当前会话目标：
+  - Telegram：优先 `chat_id`，回退 `sender_id`
+  - Discord：频道会话优先 `channelId`，写成 `channel:<id>`；DM 优先用户 ID，写成 `user:<id>`
+  - Feishu：优先 `chat_id`，回退 `open_id`
+- 若当前会话拿不到目标 ID，才让用户手动提供
+- 若第 5 项选择了 `最小安全`，则这一项必须强制关闭，不再继续追问投递目标
+
+建议优先参考：`references/layer1-base.md` 中的“Exec 高危操作审批（机制说明；实际收集在第 2 轮）”。
+
+## 8) Discord 审批按钮（可选）
+
+适用场景：已在第 2 轮开启第 7 项审批后，希望在 Discord 内用按钮完成审批。
 
 前提（强制）：
-- 审批提示必须先能投递到 Discord：在第 1 层权限模式中，将 `approvals.exec.mode` 设为 `session`（并在 Discord 会话触发）或 `targets/both`（包含 `{"channel":"discord","to":"user:<id>"}` / `{"channel":"discord","to":"channel:<id>"}`）。
+- 审批提示必须先能投递到 Discord：在第 2 轮第 7 项中，将 `approvals.exec.mode` 设为 `session`（并在 Discord 会话触发）或 `targets/both`（包含 `{"channel":"discord","to":"user:<id>"}` / `{"channel":"discord","to":"channel:<id>"}`）。
 - 本段配置只影响“在 Discord 内以按钮形式审批”，不负责“审批提示投递到哪里”。
 
 ```json
@@ -100,7 +128,7 @@
 }
 ```
 
-## 8) 飞书探测缓存优化
+## 9) 飞书探测缓存优化
 
 适用场景：用户在用 Feishu 渠道，默认每分钟探测连接会消耗大量 API 配额。
 
@@ -195,10 +223,10 @@ export { PROBE_CACHE_TTL_MS };
 
 若文件不存在：提示用户插件路径缺失并跳过该项，不中断其他配置。
 
-## 9) Telegram（本层暂无渠道增强项）
+## 10) Telegram
 
-Telegram 的“审批提示投递 / `/approve`”属于 **exec 审批系统**，推荐在第 1 层权限模式里统一配置：
-- `~/.openclaw/openclaw.json`：`approvals.exec`（`mode=session/targets/both` + `targets`）
-- `~/.openclaw/exec-approvals.json`：`security=allowlist + ask=on-miss` 策略与 allowlist
+Telegram 在第 2 轮没有单独的渠道增强项，但可以直接使用第 7 项“Exec 高危操作审批”。
 
-建议优先参考：`references/layer1-base.md` 中的“Exec 高危操作审批（可选，仅 coding/full 有效）”。
+建议：
+- 若只想在当前 Telegram 对话里收审批，优先选 `session`
+- 若要长期固定投递，选 `targets` 或 `both`，并优先自动提取当前会话的 `chat_id`

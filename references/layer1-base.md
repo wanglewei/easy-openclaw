@@ -174,6 +174,7 @@ curl -L -s "https://r.jina.ai/http://example.com" | head
 关键结论（避免误解）：
 - `minimal` profile 下，`exec` 工具组通常会被禁用（很多基础命令都跑不了），因此 **审批机制也没有触发机会**。
 - 只有在 `coding` / `full` 这种 **仍允许执行工具** 的 profile 下，再叠加 `exec` 审批（`security=allowlist + ask=on-miss`）才有意义：不在 allowlist 的命令才会弹出审批。
+- 用户是否启用审批，不在第 1 轮收集；统一放到第 2 轮的“Exec 高危操作审批”里收集。
 
 推荐顺序：
 1) 维持现状（默认，强烈推荐：`coding`）
@@ -213,7 +214,7 @@ command -v docker || echo docker_missing
 说明：
 - `coding` 权限通常已经足够，是当前这套 skill 的原生体验，强烈建议保持。
 - 能读写配置、执行常规命令、完成大部分自动化修改。
-- 若要启用审批，建议保持 `coding` 再叠加“exec 高危操作审批”。
+- 若要启用审批，建议保持 `coding`，并在第 2 轮再叠加“exec 高危操作审批”。
 - 重要：仅保留 `coding` 不代表“删除文件 / sudo 一定会触发审批”。OpenClaw 新版里，`tools.profile` 只决定工具集合，不直接等于 exec 审批策略。
 - 若要验证审批，优先测试 `exec` 审批路径：确保 `exec-approvals.json` 已启用 `security=allowlist + ask=on-miss`，并执行一个“不在 allowlist 中”的命令来触发审批；不要把“rm 没弹审批”直接理解成 Telegram / Discord 审批联动失效。
 - 默认不额外改动用户现有权限配置；若探测到已是 `coding`，可直接维持。
@@ -273,7 +274,7 @@ openclaw config set tools.profile coding
 - 若环境可自动修复（如 Debian/Ubuntu 且有 `sudo`）：可在用户同意后先安装 Docker。
 - 若无法自动修复：明确告知用户先装 Docker，随后再开启 `minimal + sandbox`。
 
-### Exec 高危操作审批（可选，仅 coding/full 有效）
+### Exec 高危操作审批（机制说明；实际收集在第 2 轮，仅 coding/full 有效）
 
 设计目标：
 - **自动执行（allowlist）**：常用低风险命令（如 `ls/cat/rg/git status` 等）
@@ -315,11 +316,10 @@ openclaw config set tools.profile coding
 }
 ```
 
-写入方式（推荐命令，避免手写 JSON 出错）：
-
-```bash
-printf '%s' '{"version":1,"defaults":{"security":"allowlist","ask":"on-miss","askFallback":"deny","autoAllowSkills":true},"agents":{"main":{"security":"allowlist","ask":"on-miss","askFallback":"deny","autoAllowSkills":true,"allowlist":[{"pattern":"/usr/bin/ls"},{"pattern":"/bin/pwd"},{"pattern":"/usr/bin/cat"},{"pattern":"/usr/bin/grep"},{"pattern":"/usr/bin/find"},{"pattern":"/usr/bin/rg"},{"pattern":"/usr/bin/openclaw"},{"pattern":"/opt/homebrew/bin/openclaw"},{"pattern":"/usr/bin/git"},{"pattern":"/opt/homebrew/bin/git"},{"pattern":"/usr/bin/python3"},{"pattern":"/usr/bin/npm"}]}}}' | openclaw approvals set --stdin --json
-```
+写入方式（强制）：
+- 不要直接照抄仓库里的示例路径；写入前必须先用 `command -v ls pwd cat grep find rg openclaw git python3 npm` 获取当前机器的真实路径。
+- 只把“当前机器上实际存在”的路径放进 allowlist。
+- 再将生成后的 JSON 通过 `openclaw approvals set --stdin --json` 写入。
 
 审批命令（在接收审批的窗口内执行）：
 - `/approve <id> allow-once`
@@ -330,6 +330,8 @@ printf '%s' '{"version":1,"defaults":{"security":"allowlist","ask":"on-miss","as
 - OpenClaw `2026.2.24` 下，`tools.exec.askFallback` 不是合法键，`askFallback` 要放在 `exec-approvals.json`。
 - allowlist 建议用实际二进制路径（可用 `command -v ls`、`command -v git` 获取）；macOS Homebrew 常见路径是 `/opt/homebrew/bin/*`。
 - 如果只允许 `{ "pattern": "/usr/bin/git" }` 这类“放行整个二进制”，那么 `git push/pull/reset/clean` 也会一并被自动放行；若你想让这些高危子命令走审批，需要使用更细的 pattern（按子命令/参数）或干脆先不默认放行 `git`。
+- 若开启审批后要做读取/验收，优先一条命令一条命令执行；不要默认用 `ls && cat`、长管道或复合 shell 命令，否则更容易连续触发多条审批。
+- 若审批消息里的“Reply with”示例缺少 `<id>`，仍应以消息中展示的审批 `ID` 为准，执行 `/approve <id> allow-once` / `allow-always` / `deny`。
 
 ### 审批提示投递（`approvals.exec`，一次性配置）
 

@@ -48,7 +48,7 @@ echo "before=${BEFORE_PID:-none} after=${AFTER_PID:-none}"
 ## 功能验收观测
 
 至少输出本轮已开启项的验收结论：
-- 权限模式：`openclaw security audit --deep` + `openclaw approvals get --json`（若启用带 `+审批` 的权限策略）
+- 权限模式：`openclaw security audit --deep` + `openclaw approvals get --json`（若第 2 轮已开启审批）
 - 渠道健康：`openclaw channels status --probe`
 - 记忆功能：检查 `memoryFlush.enabled=true` 与 `softThresholdTokens=40000`（若已开启）
 - 联网搜索：正文提取链路检查（`defuddle -> r.jina.ai -> browser`，若已开启）
