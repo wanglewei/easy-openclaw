@@ -331,7 +331,9 @@ openclaw config set tools.profile coding
 - allowlist 建议用实际二进制路径（可用 `command -v ls`、`command -v git` 获取）；macOS Homebrew 常见路径是 `/opt/homebrew/bin/*`。
 - 如果只允许 `{ "pattern": "/usr/bin/git" }` 这类“放行整个二进制”，那么 `git push/pull/reset/clean` 也会一并被自动放行；若你想让这些高危子命令走审批，需要使用更细的 pattern（按子命令/参数）或干脆先不默认放行 `git`。
 - 若开启审批后要做读取/验收，优先一条命令一条命令执行；不要默认用 `ls && cat`、长管道或复合 shell 命令，否则更容易连续触发多条审批。
-- 若审批消息里的“Reply with”示例缺少 `<id>`，仍应以消息中展示的审批 `ID` 为准，执行 `/approve <id> allow-once` / `allow-always` / `deny`。
+- 若审批消息里的“Reply with”示例缺少 `<id>`，仍应以消息中展示的**完整审批 ID** 为准，执行 `/approve <full-id> allow-once` / `allow-always` / `deny`。
+- `allow-once|allow-always|deny` 是“三选一占位符”，不能整串原样输入；正确命令必须只保留其中一个动作。
+- 若用户一时看不懂，agent 应直接回一条可复制的完整命令，例如：`/approve 49a500da-bd57-4458-a320-f1e65281f0d5 allow-once`。
 
 ### 审批提示投递（`approvals.exec`，一次性配置）
 

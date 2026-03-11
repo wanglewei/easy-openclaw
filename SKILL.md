@@ -542,7 +542,9 @@ cd ~ && zip -r "$BACKUP_DIR/backup-openclaw-all-$(date +%Y%m%d-%H%M%S).zip" .ope
 - 必须执行成功并回显 `defaults.security=allowlist`、`defaults.ask=on-miss`、`defaults.askFallback=deny`
 - 若失败，立即告知用户并停止审批项的生效承诺
 - 若开启审批后要做读取/验收，优先一条命令一条命令执行；禁止把 `ls && cat`、多段 `;`、长管道等复合命令当成默认检查方式，避免连续触发多条审批。
-- 若审批提示的“Reply with”示例缺少 `<id>`，仍应以消息里显示的 `ID` 为准，使用 `/approve <id> allow-once` / `allow-always` / `deny`。
+- 若审批提示的“Reply with”示例缺少 `<id>`，仍应以消息里显示的完整 `ID` 为准，使用 `/approve <full-id> allow-once` / `allow-always` / `deny`。
+- 若用户在审批弹窗后显得困惑、输入错误，或明确问“该怎么批”，必须直接回一条**可复制的完整命令**，例如：`/approve 49a500da-bd57-4458-a320-f1e65281f0d5 allow-once`。
+- 必须明确说明：`allow-once|allow-always|deny` 是三选一的占位写法，不能把整串 `allow-once|allow-always|deny` 原样贴进命令。
 
 ### 4. 飞书探测缓存改造（若第 9 项开启且用户使用 Feishu）
 
