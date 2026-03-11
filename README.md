@@ -59,10 +59,15 @@
 
 - `SKILL.md`：主流程规则（AI 按这个执行）
 - `references/`：各层详细说明
-- `openclaw插件开发记录.md`：开发记录和待办
 
-## 当前进度
+## 项目参考
 
-主流程已可用，适合直接测试。
-
-当前主要剩余项是实测闭环（exec 审批：`approvals.exec` 投递 + `/approve`），尤其是不同渠道下的真实审批体验验证。
+- OpenClaw：`https://github.com/openclaw-ai/openclaw`
+- OpenClaw Backup：`https://clawhub.ai/alex3alex/openclaw-backup`
+- Agent Reach：`https://github.com/Panniantong/Agent-Reach`
+- 安全防御矩阵：`https://github.com/slowmist/openclaw-security-practice-guide`
+- Find Skills：`https://clawhub.ai/JimLiuxinghai/find-skills`
+- Youtube Clipper Skill：`https://github.com/op7418/Youtube-clipper-skill`
+- OpenClaw Medical Skills：`https://github.com/FreedomIntelligence/OpenClaw-Medical-Skills`
+- Awesome OpenClaw Usecases：`https://github.com/hesamsheikh/awesome-openclaw-usecases`
+- Awesome OpenClaw Skills：`https://github.com/VoltAgent/awesome-openclaw-skills`
