@@ -20,6 +20,11 @@
 - Agent 目录：`~/.openclaw/agents/`
 - 飞书插件探测文件：`~/.openclaw/extensions/feishu/src/probe.ts`
 
+注意（Windows / WSL / 多环境常见误区）：
+- 本仓库默认假设 OpenClaw 的“数据目录”（配置/工作区/agents）在用户主目录下的 `~/.openclaw/`。
+- 在 Windows 上，很多人是通过 **WSL Ubuntu** 安装并运行 OpenClaw：此时 `~/.openclaw/` 位于 Linux 的 home（如 `/home/<user>/.openclaw`），但其底层磁盘文件（WSL 的 `ext4.vhdx`）经常仍然落在 Windows 的 `C:`，所以会产生“我明明装在 D 盘，为何数据在 C 盘”的错觉。
+- 真正会导致“需要手工合并配置”的常见原因是：**安装/启用 Skill 的终端环境**与**运行 Gateway 的环境**不一致（例如 Windows PowerShell 装、WSL 里跑；或两个 WSL distro/两个 Linux 用户混用），最终改动写进了另一份 `~/.openclaw/`。
+
 ## 分层与接入总览
 
 - 基础推荐层（跨渠道通用）：流式消息、记忆功能、消息回执、联网搜索、权限模式

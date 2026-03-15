@@ -64,6 +64,36 @@ openclaw config get tools.profile
 - 若会话仍是宿主机默认 full access，命令可能直接执行，不会进入审批
 - 若日志出现 `spawn docker ENOENT` 或 `Sandbox mode requires Docker`，将 `agents.defaults.sandbox.mode` 改回 `"off"` 并重启
 
+## Windows + WSL 场景：目录/环境混用导致“装到 C 盘、需要合并配置”
+
+现象（观众高频反馈）：
+- 明明在 Windows 上操作，但看起来 OpenClaw 的配置/Skill/备份“都装到 C 盘了”
+- 或者“Gateway 在跑，但配置没变 / 需要手工合并配置”
+
+核心结论：
+- 在 WSL Ubuntu 中，`~/.openclaw/` 属于 **Linux home**（如 `/home/<user>/.openclaw`）。
+- 但 WSL 的 Linux 文件系统底层是 `ext4.vhdx`，它经常默认落在 Windows 的 `C:`，所以会产生“怎么写到 C 盘了”的错觉。
+- 真正导致“需要合并配置”的常见原因是：**你装/启用 Skill 的环境**和**你运行 Gateway 的环境**不是同一套（比如 Windows PowerShell 装、WSL 里跑；或两个 WSL distro/两个 Linux 用户混用）。
+
+快速自检（让对方在“他平时运行 OpenClaw 的那个终端”执行）：
+
+```bash
+uname -a
+echo "$HOME"
+command -v openclaw
+ls -ld ~/.openclaw || true
+ls -l ~/.openclaw/openclaw.json 2>/dev/null || true
+```
+
+判定：
+- `command -v openclaw` 指向 WSL 路径、且 `~/.openclaw/openclaw.json` 存在：说明你在 WSL 环境。
+- 如果你在 Windows 另一个终端也能跑 `openclaw`，务必确认两边不是两套不同安装（否则很容易“装到一边、跑在另一边”）。
+
+修复建议（优先级从高到低）：
+- 确保 **安装/启用 Skill、修改配置、重启 Gateway** 都在同一个环境里完成（同一个 WSL distro、同一个 Linux 用户）。
+- 如果之前是在 Windows PowerShell 装、WSL 里跑：在 WSL 里重新执行安装/启用，并在 WSL 里重启 Gateway。
+- 如果存在两个 WSL distro：统一只保留一个用于运行 OpenClaw，避免“改 A、跑 B”。
+
 ## Discord 无响应排查（免 @ 场景）
 
 先看渠道探针：

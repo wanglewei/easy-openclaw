@@ -90,7 +90,7 @@ test -S /var/run/docker.sock && ls -l /var/run/docker.sock || echo "docker_sock=
 先执行：
 
 ```bash
-ls ~/.openclaw/backup-*.zip 2>/dev/null
+ls ~/openclaw-backups/backup-openclaw-all-*.zip 2>/dev/null || ls ~/.openclaw/backups/backup-openclaw-all-*.zip 2>/dev/null
 ```
 
 规则：
